@@ -17,5 +17,5 @@ and put below configs int the file:
 [santosh_bin_shell]$git add README.txt
 [santosh_bin_shell]$git commit -m "readme added"
 [santosh_bin_shell]$git pull #only for first time
-[santosh_bin_shell]$git push 
+[santosh_bin_shell]$git push origin master
 
