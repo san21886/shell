@@ -23,7 +23,7 @@ function get_associated_pids_info
 function generate_kill_file
 {
 	#get_associated_pids_info $1
-	[ ! -d "/tmp/sdf_kill_files" ] || mkdir -pv "/tmp/sdf_kill_files"
+	[ ! -d "/tmp/sdf_kill_files" ] && mkdir -pv "/tmp/sdf_kill_files"
 	associatedpsinfo=$(get_associated_pids_info $1)
 	for pid in $associatedpsinfo 
 	do
