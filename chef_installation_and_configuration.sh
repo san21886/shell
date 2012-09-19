@@ -146,7 +146,7 @@ function configure_knife_client_on_mylaptop
 	fi
 
 	echo "installing chef-client, ruby gem" >&2
-	gem install chef
+	gem install chef --no-ri --no-rdoc
 	if [[ $? != 0 ]];then
 		echo "failed to install ruby gem: chef-client" >&2
 		exit 1
@@ -164,11 +164,47 @@ function configure_knife_client_on_mylaptop
 	fi
 }
 
+function configure_node_knife_client
+{
+	echo "assuming ruby/rubygem/ is installed with their dependicies, else please visit:http://wiki.opscode.com/display/chef/Installing+Chef+Client+on+Ubuntu+or+Debian"
+	chef_server=$1
+	echo "installing chef-client, ruby gem" >&2
+	gem install chef --no-ri --no-rdoc
+	if [[ $? != 0 ]];then
+		echo "failed to install ruby gem: chef-client" >&2
+		exit 1
+	fi
+
+	echo "creating chef dir :/etc/chef" >&2
+	sudo mkdir -p /etc/chef
+	if [[ $? != 0 ]];then
+		echo "failed to create chef dir" >&2
+		exit 1
+	fi
+
+	echo "creating client.rb and validation.pem on chef-server" >&2
+	ssh $chef_server knife configure client /tmp
+	if [[ $? != 0 ]];then
+		echo "failed to create client.rb and validation.pem" >&2
+		exit 1
+	fi
+
+	echo "copying client.rb and validation.pem from chef-server" >&2
+	sudo scp $chef_server:/tmp/client.rb /etc/chef && sudo scp $chef_server:/tmp/validation.pem /etc/chef
+	if [[ $? != 0 ]];then
+		echo "failed to copying client.rb and validation.pem from chef-server" >&2
+		exit 1
+	else
+		echo "node chef-client configured." >&2
+	fi 
+}
+
 function usage
 {
 	echo "$0 install_chef_server"
 	echo "$0 configure_knife_on_chef_server"
 	echo "$0 configure_knife_client_on_mylaptop <chef_server_address> <new_chef_user_name>"
+	echo "$0 configure_node_knife_client <local_chef_client_address|chef_server_address>"
 }
 
 if [[ $1 == "install_chef_server" ]];then
@@ -182,6 +218,9 @@ elif [[ $# == 4 ]] && [[ $1 == "configure_knife_client_on_mylaptop" ]];then
 	#When working with chef, you will spend a lot of time editing recipes and other files, and you'll find it much more convenient to edit them on your laptop/desktop (your management workstation), where you have your editor configured just to your liking. To facilitate this mode of working, we recommend you create a knife client to use knife on your development machine.
 	#Make sure you've configured knife on your chef server before proceeding with this step.
 	configure_knife_client_on_mylaptop $2 $3
+elif [[ $# == 3 ]] && [[ $1 == "configure_node_knife_client" ]];then
+	#configure nodes that will be managed by chef
+	configure_node_knife_client $2
 else
 	usage
 fi
