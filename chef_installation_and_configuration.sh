@@ -81,7 +81,37 @@ function configure_knife_on_chef_server
 			exit 1
 		fi
 	done
+
+	echo "creating $USER chef dir ~/.chef" >&2
+	mkdir -p ~/.chef
+	if [[ $? != 0 ]];then
+		echo "failed to create chef dir" >&2
+		exit 1
+	fi
+
+	echo "copying authentication files to chef dir: ~/.chef" >&2
+	sudo cp /etc/chef/validation.pem /etc/chef/webui.pem ~/.chef
+	if [[ $? != 0 ]];then
+		echo "failed to copy authentication files to chef dir" >&2
+		exit 1
+	fi
+	echo "changing chef validation files user" >&2
+	sudo chown -R $USER ~/.chef
+	if [[ $? != 0 ]];then
+		echo "failed to change chef validation files user" >&2
+		exit 1
+	fi
 	
+	echo "going to run knife interactive configuration command" >&2
+	echo "for configuration help pease visit: http://wiki.opscode.com/display/chef/Installing+Chef+Server+on+Debian+or+Ubuntu+using+Packages" >&2
+	echo "Please enter the location of the existing admin client's private key: [/etc/chef/webui.pem] .chef/webui.pem" >&2
+	echo "Please enter the location of the validation key: [/etc/chef/validation.pem] .chef/validation.pem" >&2
+	knife configure -i
+	if [[ $? == 0 ]];then
+		echo "server knife configuration done." >&2
+	else
+		echo "server knife configuration failed." >&2
+	fi
 }
 
 function usage
