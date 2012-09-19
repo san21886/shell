@@ -66,15 +66,36 @@ function install_chef_server
 	#Create all the correct directory paths per the configuration files
 }
 
+function configure_knife_on_chef_server
+{
+	#shell array declaration
+	servers=( 'chef-server-webui' 'chef-server (api)' 'chef-expander' 'chef/solr' 'rabbitmq' 'couchdb' )
+	#array size: ${#servers[@]}
+	#array all elements: "${servers[@]}"
+	#array element at index i: "${servers[$i]}"
+	for index in $(seq 0 $(expr "${#servers[@]}" \- 1))
+	do
+		process=$(ps auxx|grep -v grep|grep  "${servers[$index]}")
+		if [[ -z $process ]];then
+			echo "${servers[$index]} is not running"
+			exit 1
+		fi
+	done
+	
+}
+
 function usage
 {
 	echo "$0 install_chef_server"
+	echo "$0 configure_knife_on_chef_server"
 }
 
 if [[ $1 == "install_chef_server" ]];then
 	add_opscode_apt_repo
 	add_apt_trusted_gpg_key
 	install_chef_server
+elif [[ $1 == "configure_knife_on_chef_server" ]];then
+	configure_knife_on_chef_server
 else
 	usage
 fi
