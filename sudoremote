@@ -1,0 +1,33 @@
+#!/bin/bash
+
+usage(){
+	echo "$0 command <comma-separated host-ip> <host-user> <pass>" >&2
+	echo "$0 command <comma-separated ssh-config-host> <pass>" >&2
+	exit 255
+}
+
+run(){
+ssh -t -t -t $host sudo -S $command<< EOF
+$pass
+EOF
+}
+
+if [[ $# != 4 ]] && [[ $# != 3 ]];then
+	usage
+fi
+
+command=$1
+remote_host=$2
+if [[ $# == 4 ]];then
+	remote_user=$3
+	pass=$4
+	for host in $(echo "$remote_host"|sed 's/,/ /g');do 
+		host=$remote_user@$host
+		run
+	done
+else
+	pass=$3
+	for host in $(echo "$remote_host"|sed 's/,/ /g');do 
+		run
+	done
+fi
